@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peer Case Rounds (Voice)</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f4ef; --surface:#ffffff; --ink:#1d2327; --muted:#5d666d;
+    --line:#dcd7cc; --accent:#1f5f5b; --accent-ink:#ffffff;
+    --me:#24384f; --me-ink:#ffffff; --danger:#a5352b; --danger-soft:#f6e1de;
+    --hold:#8a5a00; --hold-soft:#fbefd5; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 24px rgba(0,0,0,.05);
+    --priya:#6a4c93; --marcus:#1f6f8b; --devon:#9b5a2a; --results:#3d5a3c; --results-soft:#eaf2e8; --live:#b3261e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14181b; --surface:#1c2226; --ink:#e7eaec; --muted:#9aa4ab;
+      --line:#323b41; --accent:#6fb5ad; --accent-ink:#0f1b1a;
+      --me:#3b5b80; --me-ink:#ffffff; --danger:#e07a6f; --danger-soft:#3a2321;
+      --hold:#f0c063; --hold-soft:#35290f; --shadow:none;
+      --priya:#b79be0; --marcus:#71bfd9; --devon:#e0a070; --results:#9cc99a; --results-soft:#1d2a1d; --live:#ff8a80;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:20px 16px 0;min-height:100dvh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .team{display:flex}
+  .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font:600 15px Inter,sans-serif;
+      border:2px solid var(--bg);flex:none;transition:box-shadow .2s}
+  .team .av+.av{margin-left:-10px}
+  .av.p{background:var(--priya)} .av.m{background:var(--marcus)} .av.d{background:var(--devon)} .av.u{background:var(--me)}
+  .av.talking{box-shadow:0 0 0 3px var(--accent)}
+  h1{font:600 22px/1.2 "Source Serif 4",serif;margin:0}
+  .sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+  .status{margin-left:auto;font:500 13px Inter,sans-serif;color:var(--muted);text-align:right}
+  .badge{display:inline-block;font:600 11px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;
+    border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle;border:1px solid var(--accent);color:var(--accent)}
+  .badge.test{background:var(--hold-soft);color:var(--hold);border-color:var(--hold)}
+
+  .setup{margin:24px 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .setup h2{font:600 19px "Source Serif 4",serif;margin:0 0 6px}
+  .setup h3{font:600 15px Inter,sans-serif;margin:18px 0 8px}
+  .setup p{margin:0 0 14px;color:var(--muted);font-size:15px}
+  .setup ul{margin:0 0 18px;padding-left:20px;color:var(--muted);font-size:14.5px}
+  .peers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 18px}
+  @media (max-width:640px){.peers{grid-template-columns:1fr}}
+  .peer{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13.5px;color:var(--muted)}
+  .peer strong{display:block;color:var(--ink);font-size:14px}
+  label{display:block;font:500 13px Inter,sans-serif;margin:0 0 6px}
+  .check{display:flex;gap:8px;align-items:flex-start;font:400 14.5px Inter,sans-serif;margin:0 0 8px;cursor:pointer}
+  .check input{margin-top:4px}
+  input[type=text],input[type=password]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--bg);color:var(--ink);font:15px Inter,sans-serif}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .row.one{grid-template-columns:1fr}
+  @media (max-width:560px){.row{grid-template-columns:1fr}}
+  .info{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--muted);margin:6px 0 16px}
+  .info.warn{border-color:var(--hold);background:var(--hold-soft);color:var(--ink)}
+  .resume-box{border:1px solid var(--hold);background:var(--hold-soft);color:var(--ink);border-radius:10px;padding:12px 14px;margin:0 0 16px;font-size:14.5px}
+  .btn{border:0;border-radius:10px;padding:11px 18px;font:600 15px Inter,sans-serif;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.danger{background:var(--danger-soft);color:var(--danger);border:1px solid transparent}
+  .btn.hold{background:var(--hold-soft);color:var(--hold);border:1px solid var(--hold)}
+  .btn.mic{background:var(--me);color:var(--me-ink)}
+  .btn.mic.on{background:var(--live);color:#fff;animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(179,38,30,.45)}50%{box-shadow:0 0 0 7px rgba(179,38,30,0)}}
+  @media (prefers-reduced-motion: reduce){.btn.mic.on{animation:none}}
+  .err{color:var(--danger);font-size:14px;margin-top:10px;min-height:1em}
+
+  details.case{margin:14px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;font-size:14.5px}
+  details.case summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none}
+  details.case summary::-webkit-details-marker{display:none}
+  details.case summary::before{content:"▸ ";color:var(--muted)}
+  details.case[open] summary::before{content:"▾ "}
+  .casebody{padding:0 16px 14px;max-height:46vh;overflow:auto}
+  .casebody h3{font:600 14px Inter,sans-serif;margin:12px 0 2px;color:var(--accent)}
+  .casebody p{margin:2px 0 6px}
+
+  #chat{flex:1;padding:18px 0 12px;display:flex;flex-direction:column;gap:12px;transition:opacity .2s}
+  #chat.dim{opacity:.35;pointer-events:none;user-select:none}
+  .line{display:flex;gap:10px;align-items:flex-start;max-width:90%}
+  .line.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg{padding:10px 14px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word;background:var(--surface);
+       border:1px solid var(--line);box-shadow:var(--shadow);border-top-left-radius:4px}
+  .line.me .msg{background:var(--me);color:var(--me-ink);border-color:transparent;border-top-left-radius:14px;border-top-right-radius:4px}
+  .who{font:600 12px Inter,sans-serif;letter-spacing:.02em;margin-bottom:2px}
+  .who .role{font-weight:500;color:var(--muted)}
+  .line.me .who{color:rgba(255,255,255,.8)}
+  .who.p{color:var(--priya)} .who.m{color:var(--marcus)} .who.d{color:var(--devon)}
+  .results{align-self:stretch;border:1px solid var(--results);background:var(--results-soft);border-radius:12px;padding:10px 14px;
+           font-size:14.5px;white-space:pre-wrap}
+  .results .who{color:var(--results)}
+  .review{align-self:stretch;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .review h2{font:600 18px "Source Serif 4",serif;margin:18px 0 6px}
+  .review h2:first-of-type{margin-top:4px}
+  .review ul{margin:4px 0 10px;padding-left:20px}
+  .review li{margin:3px 0}
+  .review p{margin:8px 0 4px}
+  .review a{color:var(--accent)}
+  .typing{color:var(--muted);font-style:italic;font-size:14px}
+  .note{align-self:center;color:var(--muted);font-size:13px;text-align:center}
+
+  .holdbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--hold);background:var(--hold-soft);
+    color:var(--ink);border-radius:12px;padding:12px 14px;margin:0 0 10px}
+  .holdbar strong{color:var(--hold)}
+  .listen{font:500 13px Inter,sans-serif;color:var(--live);margin:0 0 6px;min-height:1.2em}
+  .composer{position:sticky;bottom:0;background:var(--bg);padding:10px 0 16px;border-top:1px solid var(--line)}
+  .bar{display:flex;gap:8px;align-items:flex-end}
+  textarea{flex:1;min-height:52px;max-height:180px;resize:none;padding:13px 14px;border:1px solid var(--line);border-radius:12px;
+    background:var(--surface);color:var(--ink);font:15px/1.4 Inter,sans-serif}
+  textarea:disabled{opacity:.6}
+  .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+  .actions .btn{padding:8px 14px;font-size:14px}
+  .actions .check{margin:0 0 0 6px;font-size:13.5px}
+  .hidden{display:none !important}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="team" aria-hidden="true"><div class="av p" id="avP">P</div><div class="av m" id="avM">M</div><div class="av d" id="avD">D</div><div class="av u">You</div></div>
+    <div>
+      <h1>Peer Case Rounds <span class="badge">Voice</span><span class="badge test hidden" id="testBadge">Claude test mode</span></h1>
+      <p class="sub">Spoken small-group case discussion · five-month-old with fever and rash</p>
+    </div>
+    <div class="status hidden" id="status"></div>
+  </header>
+
+  <section class="setup" id="setup">
+    <h2>Before we begin</h2>
+    <p>You are one of four fourth-year medical students reviewing the same infant before presenting to the attending. Talk the case through out loud with your three classmates: the differential diagnosis, the cause, the symptoms, the tests you would order, the treatment and the prognosis.</p>
+    <div class="peers">
+      <div class="peer"><div class="av p">P</div><div><strong>Priya Nair</strong>Analytical and diagnostic. Ranks the differential, asks what would change your mind.</div></div>
+      <div class="peer"><div class="av m">M</div><div><strong>Marcus Okafor</strong>Jargon-dense and efficient. Numbers, thresholds, guidelines, devil's advocate.</div></div>
+      <div class="peer"><div class="av d">D</div><div><strong>Devon Lindqvist</strong>Empathetic and ethical. Keeps the baby and her family in view.</div></div>
+    </div>
+    <ul>
+      <li>Your classmates speak aloud, each in their own voice. Answer by pressing <strong>🎤 Speak</strong> and talking, or type if you prefer.</li>
+      <li>Everyone has read the case file (open it any time with <strong>Case file</strong>). Test results appear only when the group orders a test.</li>
+      <li><strong>Hold</strong> pauses the discussion (voices and microphone stop); <strong>Continuation</strong> resumes it. Saying “hold” also pauses.</li>
+      <li>Say or type <strong>stop</strong> to end. You then receive an evaluation of your discussion skills (preciseness, explanations, constructiveness) and tips to improve.</li>
+    </ul>
+
+    <h3>Voice settings</h3>
+    <label class="check"><input type="checkbox" id="optSpeak" checked> Classmates speak aloud</label>
+    <label class="check"><input type="checkbox" id="optHands" checked> Hands-free: start listening automatically when the classmates finish, and send my answer after a short pause</label>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px">
+      <button class="btn ghost" id="testVoicesBtn" type="button">🔊 Test the voices</button>
+      <button class="btn ghost" id="testMicBtn" type="button">🎤 Test my microphone</button>
+    </div>
+    <div class="info" id="micInfo">Works best in Google Chrome or Microsoft Edge on a computer, with headphones (so the microphone does not pick up the classmates' voices). The browser will ask for microphone permission the first time: choose <strong>Allow</strong>.</div>
+
+    <div class="resume-box hidden" id="resumeBox"></div>
+    <div class="row" id="fields">
+      <div>
+        <label for="name">Your first name (your classmates will use it)</label>
+        <input type="text" id="name" autocomplete="given-name" placeholder="for example, Alex" maxlength="30">
+      </div>
+      <div id="codeWrap">
+        <label for="code">Access code</label>
+        <input type="password" id="code" autocomplete="off" placeholder="From your instructor">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn hidden" id="resumeBtn">Continue my held session</button>
+      <button class="btn" id="startBtn">Join the discussion</button>
+    </div>
+    <div class="err" id="setupErr" role="alert"></div>
+  </section>
+
+  <details class="case hidden" id="caseFile">
+    <summary>Case file: Baby Girl A. Reyes-Whitfield, 5 months</summary>
+    <div class="casebody">
+      <h3>Chief complaint</h3>
+      <p>Brought by her biological mother: high fever for more than 4 days, feeding poorly, and a rash over her body.</p>
+      <h3>History of present illness</h3>
+      <p>Fever began about 5 days ago; now continuous at 39.2–40.1 °C (102.5–104.1 °F), poorly responsive to alternating acetaminophen and ibuprofen. Rash for 2 days: blotchy, pink-red, flat to slightly raised, non-blistering; trunk first, then arms, legs and diaper area. Eyes "pink and glassy" for 2 days, no discharge or crusting. Lips red and slightly cracked. Very fussy, hard to console, high-pitched crying, fragmented sleep. Taking about half her usual feeds; 3–4 wet diapers in 24 hours. Hands and feet "puffy and warm" today. No cough, congestion, vomiting or diarrhea. No new soaps, foods or medicines. No travel. Small in-home daycare twice weekly; no known sick contacts.</p>
+      <p>Urgent care on fever day 3: rapid strep antigen negative; urinalysis reported "no infection" (details not given). Sent home with reassurance.</p>
+      <h3>Background</h3>
+      <p>Mixed race (Filipino mother, Irish-American father). Term, 39 weeks, uncomplicated vaginal delivery, 3.3 kg; no NICU. Normal development and newborn screens. Vaccines up to date through 4 months (HepB ×2, DTaP, IPV, Hib, PCV13, rotavirus ×2); none in past 2 weeks. No known allergies. Healthy parents; no autoimmune, rheumatologic, vasculitic or recurrent-fever family history. Lives with both parents and a healthy 3-year-old sibling. Smoke-free; no pets, ticks or untreated water. Breast milk plus formula; no solids yet.</p>
+      <h3>Vital signs</h3>
+      <p>Temp 39.8 °C rectal · HR 168 · RR 36 · BP 88/54 · SpO₂ 98% room air · weight 6.9 kg (~45th percentile).</p>
+      <h3>Examination</h3>
+      <p>Irritable, intermittently consolable, mildly ill, not toxic. Bilateral bulbar conjunctival injection, non-exudative, limbal sparing. Lips erythematous, dry, slightly cracked; oropharynx mildly erythematous. One small mobile, mildly tender right cervical node (~1 cm). Diffuse blanching maculopapular rash on trunk, extremities and perineum; no vesicles, petechiae or purpura. Mild edema of dorsal hands and feet, warm; no periungual peeling; no joint swelling. Tachycardic, regular, no murmur. Lungs clear. Abdomen soft, no organomegaly. Moves all limbs; anterior fontanelle soft and flat.</p>
+      <h3>Results</h3>
+      <p>Not yet available. Order tests during the discussion.</p>
+    </div>
+  </details>
+
+  <main id="chat" class="hidden" aria-live="polite"></main>
+
+  <div class="composer hidden" id="composer">
+    <div class="holdbar hidden" id="holdbar" role="status">
+      <span><strong>Discussion on hold.</strong> <span id="holdText">Paused.</span></span>
+    </div>
+    <div class="listen" id="listenText" aria-live="polite"></div>
+    <div class="bar">
+      <button class="btn mic" id="micBtn" title="Speak your answer">🎤 Speak</button>
+      <textarea id="input" placeholder="Speak, or type here… (say or type “stop” to end)" rows="1"></textarea>
+      <button class="btn" id="sendBtn">Send</button>
+    </div>
+    <div class="actions">
+      <button class="btn hold" id="holdBtn" title="Pause the discussion">⏸ Hold</button>
+      <button class="btn" id="contBtn" title="Continue the discussion" disabled>▶ Continuation</button>
+      <button class="btn danger" id="stopBtn">Stop and evaluate</button>
+      <button class="btn ghost hidden" id="readBtn">🔊 Read evaluation aloud</button>
+      <button class="btn ghost hidden" id="dlBtn">Download transcript and evaluation</button>
+      <button class="btn ghost hidden" id="newBtn">New session</button>
+      <label class="check" id="voiceToggleWrap"><input type="checkbox" id="optSpeak2" checked> Voices on</label>
+      <label class="check"><input type="checkbox" id="optHands2" checked> Hands-free</label>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== SETTINGS (the only part you may need to edit) ===================== */
+// MODE "worker": for GitHub Pages. The page talks to your Cloudflare Worker.
+// MODE "claude": for testing inside Claude (no Worker, no access code). Set automatically in the test copy.
+const MODE = "worker";
+// Your Cloudflare Worker address. Find it in Cloudflare: Workers & Pages → your Worker → the "workers.dev" link (Visit).
+const WORKER_URL = "https://dr-nernd-quizbot.techjjy.workers.dev";
+const APP  = "peer-rounds-voice"; // tells the Worker which hidden case and instructions to use
+const TIER = "balanced";          // fast | balanced | thorough
+const SPEECH_LANG = "en-US";      // language for the microphone, for example "en-GB"
+const PAUSE_TO_SEND_MS = 2200;    // hands-free: how long a silence ends your answer
+/* ========================================================================================= */
+const EMBEDDED_PROMPT = null; // only filled in the Claude test copy; empty on GitHub
+
+const $ = (id) => document.getElementById(id);
+const CLAUDE_MODE = MODE.endsWith("claude");
+const SAVE_KEY = "peer-rounds-voice-session";
+const store = {
+  get(){ try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch { return null; } },
+  set(v){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(v)); } catch {} },
+  clear(){ try { localStorage.removeItem(SAVE_KEY); } catch {} }
+};
+const PEERS = {
+  Priya:  { cls:"p", av:"avP", role:"analytical" },
+  Marcus: { cls:"m", av:"avM", role:"efficient" },
+  Devon:  { cls:"d", av:"avD", role:"empathetic" }
+};
+
+/* ---------- Session state ---------- */
+let S = freshState();
+function freshState(){
+  return { api:[], shown:[], name:"", started:Date.now(), ended:false,
+           held:false, holdStart:0, holds:[], pending:[], savedAt:0 };
+}
+let accessCode = "", busy = false, tick = null, sampleFn = null;
+function save(){ S.savedAt = Date.now(); store.set(S); }
+const opt = { speak:true, hands:true };
+
+/* =================================================================== */
+/* VOICE OUTPUT: each classmate has a different voice                  */
+/* =================================================================== */
+const synth = window.speechSynthesis || null;
+const VOICE_STYLE = {
+  Priya:      { pitch:1.15, rate:1.02, prefer:["Samantha","Google UK English Female","Microsoft Aria","Microsoft Jenny","Zira","Karen","Moira","Female"] },
+  Marcus:     { pitch:0.85, rate:1.12, prefer:["Daniel","Google UK English Male","Microsoft Guy","Microsoft David","Microsoft Ryan","Alex","Male"] },
+  Devon:      { pitch:1.0,  rate:0.95, prefer:["Google US English","Microsoft Andrew","Microsoft Mark","Fred","Aaron","Tom","Rishi"] },
+  Results:    { pitch:1.0,  rate:1.05, prefer:["Microsoft Emma","Google UK English Female","Tessa","Serena"] },
+  Facilitator:{ pitch:1.0,  rate:1.0,  prefer:["Microsoft Emma","Google US English","Victoria","Allison"] }
+};
+let voiceMap = {};
+function assignVoices(){
+  if (!synth) return;
+  const all = synth.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang));
+  if (!all.length) return;
+  const used = new Set(); voiceMap = {};
+  for (const who of ["Priya","Marcus","Devon","Results","Facilitator"]){
+    let pick = null;
+    for (const p of VOICE_STYLE[who].prefer){
+      pick = all.find(v => v.name.toLowerCase().includes(p.toLowerCase()) && !used.has(v.name));
+      if (pick) break;
+    }
+    if (!pick) pick = all.find(v => !used.has(v.name)) || all[0];
+    voiceMap[who] = pick; if (["Priya","Marcus","Devon"].includes(who)) used.add(pick.name);
+  }
+}
+if (synth){ assignVoices(); synth.onvoiceschanged = assignVoices; }
+
+function speakable(t){
+  return t.replace(/https?:\/\/\S+/g, "the link on screen")
+    .replace(/\*\*/g,"").replace(/^#+\s*/gm,"").replace(/^\s*[-•]\s+/gm,"")
+    .replace(/mg\/kg\/day/gi," milligrams per kilo per day").replace(/mg\/kg/gi," milligrams per kilo").replace(/g\/kg/gi," grams per kilo")
+    .replace(/mg\/dL/gi," milligrams per deciliter").replace(/g\/dL/gi," grams per deciliter").replace(/mm\/h(r)?\b/gi," millimeters per hour")
+    .replace(/(\d)\s*°C/g,"$1 degrees").replace(/(\d)\s*%/g,"$1 percent").replace(/(\d+)\/(\d+)/g,"$1 over $2")
+    .replace(/≥/g," at least ").replace(/≤/g," at most ").replace(/~/g,"about ").replace(/\s+\/\s+/g," or ")
+    .replace(/\bvs\.?\s/gi,"versus ").replace(/\be\.g\.,?/gi,"for example").replace(/\bi\.e\.,?/gi,"that is");
+}
+let speakToken = 0;
+function stopSpeaking(){ speakToken++; if (synth) synth.cancel(); talking(null); }
+function talking(who){
+  ["avP","avM","avD"].forEach(id => $(id).classList.remove("talking"));
+  if (who && PEERS[who]) $(PEERS[who].av).classList.add("talking");
+}
+function speak(text, who){                     // resolves when finished (or stopped)
+  return new Promise(resolve => {
+    if (!opt.speak || !synth){ resolve(); return; }
+    const my = ++speakToken;
+    // split into sentences (not at decimals like 9.6); split very long sentences at commas (Chrome cuts off long speech)
+    const parts = speakable(text).split(/(?<=[.!?;])\s+/)
+      .flatMap(s => s.length > 180 ? s.split(/(?<=,)\s+/) : [s]);
+    const style = VOICE_STYLE[who] || VOICE_STYLE.Facilitator;
+    let i = 0; talking(who);
+    const next = () => {
+      if (my !== speakToken){ resolve(); return; }
+      if (i >= parts.length){ talking(null); resolve(); return; }
+      const chunk = parts[i++].trim(); if (!chunk){ next(); return; }
+      const u = new SpeechSynthesisUtterance(chunk);
+      if (voiceMap[who]) u.voice = voiceMap[who];
+      u.lang = (voiceMap[who] && voiceMap[who].lang) || "en-US";
+      u.pitch = style.pitch; u.rate = style.rate;
+      let done = false;
+      const fin = () => { if (done) return; done = true; clearTimeout(guard); next(); };
+      const guard = setTimeout(fin, 2500 + chunk.split(/\s+/).length * 550);   // safety net if the browser never reports the end
+      u.onend = fin; u.onerror = fin;
+      try { synth.speak(u); } catch { fin(); }
+    };
+    next();
+  });
+}
+
+/* =================================================================== */
+/* VOICE INPUT: the microphone (Chrome / Edge speech recognition)      */
+/* =================================================================== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let rec = null, listening = false, finalText = "", silenceTimer = null, micBlocked = !SR;
+function setListen(msg){ $("listenText").textContent = msg || ""; }
+function startListening(){
+  if (micBlocked || listening || busy || S.held || S.ended) return;
+  stopSpeaking();
+  try {
+    rec = new SR(); rec.lang = SPEECH_LANG; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+  } catch { micUnavailable("Speech recognition could not start in this browser."); return; }
+  finalText = $("input").value.trim() ? $("input").value.trim() + " " : "";
+  rec.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      const r = e.results[i];
+      if (r.isFinal) finalText += r[0].transcript.trim() + " "; else interim += r[0].transcript;
+    }
+    $("input").value = (finalText + interim).trim(); autoGrow();
+    setListen(opt.hands ? "🔴 Listening… pause for a moment to send." : "🔴 Listening… press 🎤 again when you are done, then Send.");
+    clearTimeout(silenceTimer);
+    if (opt.hands) silenceTimer = setTimeout(() => { stopListening(); if ($("input").value.trim()) send(); }, PAUSE_TO_SEND_MS);
+  };
+  rec.onerror = (e) => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed" || e.error === "audio-capture")
+      micUnavailable(e.error === "audio-capture" ? "No microphone was found." : "The microphone is blocked.");
+    else if (e.error === "no-speech") setListen("I did not hear anything. Press 🎤 Speak and try again, or type.");
+  };
+  rec.onend = () => { listening = false; $("micBtn").classList.remove("on"); $("micBtn").textContent = "🎤 Speak"; clearTimeout(silenceTimer);
+                      if (!$("listenText").textContent.startsWith("I did not")) setListen(""); };
+  try { rec.start(); listening = true; $("micBtn").classList.add("on"); $("micBtn").textContent = "■ Done";
+        setListen(opt.hands ? "🔴 Listening… speak now; a short pause sends your answer." : "🔴 Listening… press ■ Done when you finish."); }
+  catch { listening = false; }
+}
+function stopListening(){ clearTimeout(silenceTimer); if (rec && listening){ try { rec.stop(); } catch {} } listening = false;
+  $("micBtn").classList.remove("on"); $("micBtn").textContent = "🎤 Speak"; }
+function micUnavailable(why){
+  micBlocked = true; stopListening(); $("micBtn").disabled = true; $("micBtn").title = "Microphone not available";
+  setListen(""); note(`🎤 ${why} You can type your answers instead; your classmates will still speak.`, true);
+}
+function maybeAutoListen(){ if (opt.hands && !micBlocked && !busy && !S.held && !S.ended && !S.pending.length) startListening(); }
+
+/* ---------- Parse "Priya: … / Marcus: … / Results: …" ---------- */
+function parsePeers(text){
+  const out = []; let cur = null;
+  const re = /^\s*[*_]*\s*(Priya|Marcus|Devon|Results)(?:\s+(?:Nair|Okafor|Lindqvist))?\s*[*_]*\s*:\s*[*_]*\s*(.*)$/i;
+  for (const raw of text.split("\n")){
+    const m = raw.match(re);
+    if (m){ cur = { who:m[1][0].toUpperCase() + m[1].slice(1).toLowerCase(), text:m[2] }; out.push(cur); }
+    else if (cur){ cur.text += "\n" + raw; }
+    else if (raw.trim()){ cur = { who:"Priya", text:raw }; out.push(cur); }
+  }
+  return out.map(m => ({ ...m, text:m.text.replace(/\*\*/g,"").trim() })).filter(m => m.text);
+}
+
+/* ---------- Display helpers ---------- */
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function md(t){
+  const lines = esc(t).split("\n"); let html = "", inList = false;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+                      .replace(/(https?:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  for (const l of lines){
+    if (/^\s*[-•]\s+/.test(l)){ if(!inList){html+="<ul>";inList=true;} html += "<li>"+inline(l.replace(/^\s*[-•]\s+/,""))+"</li>"; continue; }
+    if (inList){ html+="</ul>"; inList=false; }
+    if (/^#{1,3}\s+/.test(l)) html += "<h2>"+inline(l.replace(/^#+\s+/,""))+"</h2>";
+    else if (l.trim()) html += "<p>"+inline(l)+"</p>";
+  }
+  if (inList) html += "</ul>";
+  return html;
+}
+function render(m){
+  const chat = $("chat"); let el;
+  if (m.kind === "note"){
+    el = document.createElement("div"); el.className = "note"; el.textContent = m.text;
+    if (m.error) el.style.color = "var(--danger)";
+  } else if (m.kind === "review"){
+    el = document.createElement("div"); el.className = "review";
+    el.innerHTML = `<div class="who">Clinical facilitator · evaluation</div>` + md(m.text);
+  } else if (m.who === "Results"){
+    el = document.createElement("div"); el.className = "results";
+    el.innerHTML = `<div class="who">🧪 Results back</div>` + esc(m.text);
+  } else if (PEERS[m.who]){
+    const p = PEERS[m.who];
+    el = document.createElement("div"); el.className = "line";
+    el.innerHTML = `<div class="av ${p.cls}">${m.who[0]}</div><div class="msg"><div class="who ${p.cls}">${esc(m.who)} <span class="role">· ${p.role}</span></div>${esc(m.text)}</div>`;
+  } else {
+    el = document.createElement("div"); el.className = "line me";
+    el.innerHTML = `<div class="av u">${esc((m.who||"Y")[0].toUpperCase())}</div><div class="msg"><div class="who">${esc(m.who)} (you)</div>${esc(m.text)}</div>`;
+  }
+  chat.appendChild(el);
+  el.scrollIntoView({behavior:"smooth", block:"end"});
+}
+function show(m){ S.shown.push(m); render(m); save(); }
+function note(text, error){ const m = {kind:"note", text, error:!!error}; if (error) render(m); else show(m); }
+function typing(on, label){
+  let t = $("typing");
+  if (on){
+    if (!t){ t = document.createElement("div"); t.id="typing"; t.className="typing"; $("chat").appendChild(t); }
+    t.textContent = label || "Your classmates are thinking…"; t.scrollIntoView({block:"end"});
+  } else if (t) t.remove();
+}
+function mmss(ms){
+  const s = Math.max(0, Math.round(ms/1000)), m = Math.floor(s/60), r = s % 60;
+  const unit = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  return m ? unit(m, "minute") + (r ? " " + unit(r, "second") : "") : unit(r, "second");
+}
+function refresh(){
+  const held = S.held, ended = S.ended;
+  $("input").disabled = busy || held || ended;
+  $("sendBtn").disabled = busy || held || ended;
+  $("micBtn").disabled = micBlocked || busy || held || ended;
+  $("holdBtn").disabled = held || ended;
+  $("contBtn").disabled = !held || ended;
+  $("stopBtn").disabled = busy || held || ended;
+  $("holdbar").classList.toggle("hidden", !held);
+  $("chat").classList.toggle("dim", held);
+  $("input").placeholder = held ? "On hold. Press Continuation to resume." : "Speak, or type here… (say or type “stop” to end)";
+}
+function updateStatus(){
+  $("status").textContent = S.ended ? "Session ended" : (S.held ? "On hold" : "In discussion");
+  if (S.held) $("holdText").textContent = `Paused for ${mmss(Date.now() - S.holdStart)}. Press Continuation when you are ready.`;
+}
+
+/* ---------- Talking to Claude (through the Worker, or directly in Claude test mode) ---------- */
+async function post(body){
+  let res;
+  try {
+    res = await fetch(WORKER_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  } catch {
+    throw new Error("Could not reach the Worker. Check WORKER_URL in this page and ALLOWED_ORIGINS in Cloudflare.");
+  }
+  let data = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+async function getSample(){
+  if (sampleFn) return sampleFn;
+  if (!window.claude || typeof window.claude.use !== "function") return null;
+  sampleFn = await window.claude.use("sample");
+  return sampleFn;
+}
+async function callModel(maxTokens){
+  if (CLAUDE_MODE){
+    const sample = await getSample();
+    if (!sample) throw new Error("Claude test mode is not available in this view.");
+    const msgs = S.api.map((m, i) => i === 0
+      ? { role:"user", content: EMBEDDED_PROMPT + "\n\n=== THE DISCUSSION BEGINS NOW ===\n" + m.content }
+      : m);
+    try {
+      const r = await sample(msgs, { cache:false, modelTier:"default" });
+      return (r.text || "").trim();
+    } catch (e){
+      throw new Error(e && e.code === "rate_limited" ? "Claude is busy right now (rate limit)." : (e && e.message) || "Claude did not answer.");
+    }
+  }
+  const data = await post({ accessCode, app: APP, tier: TIER, max_tokens: maxTokens, messages: S.api });
+  return (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
+}
+
+/* ---------- Show and speak queued classmate messages one by one ---------- */
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+async function drain(){
+  while (S.pending.length && !S.held){
+    const m = S.pending.shift(); save();
+    show(m);
+    if (opt.speak && synth) await speak(m.who === "Results" ? "Results are back. " + m.text : m.text, m.who);
+    else await wait(Math.min(1400, 450 + m.text.length * 4));
+    if (S.held) return;
+    await wait(250);
+  }
+  save();
+}
+
+async function turn(userContent, maxTokens, isReview){
+  S.api.push({ role:"user", content:userContent }); save();
+  busy = true; refresh(); typing(true, isReview ? "The facilitator is writing your evaluation…" : "Your classmates are thinking…");
+  try {
+    const text = await callModel(maxTokens);
+    if (!text) throw new Error("Empty reply.");
+    typing(false);
+    S.api.push({ role:"assistant", content:text });
+    if (isReview){ show({ kind:"review", text }); }
+    else { S.pending.push(...parsePeers(text)); save(); await drain(); }
+  } catch (err){
+    typing(false); S.api.pop(); save();
+    note("⚠ " + err.message + " Please try again.", true);
+    return false;
+  } finally { busy = false; refresh(); if (!S.held && !S.ended){ $("input").focus(); } }
+  if (!isReview) maybeAutoListen();
+  return true;
+}
+
+/* ---------- Hold and Continuation ---------- */
+function hold(){
+  if (S.held || S.ended) return;
+  S.held = true; S.holdStart = Date.now();
+  stopSpeaking(); stopListening(); setListen(""); typing(false); save();
+  refresh(); updateStatus(); $("contBtn").focus();
+}
+function lastPeerQuestion(){
+  for (let i = S.shown.length - 1; i >= 0; i--){
+    const m = S.shown[i];
+    if (m.local || m.kind === "note") continue;
+    if (PEERS[m.who]){
+      const qs = m.text.match(/[^.!?\n]*\?/g);
+      if (qs) return { who:m.who, q:qs[qs.length-1].trim() };
+      continue;
+    }
+    if (m.who === "Results") continue;
+    return null;                               // the participant spoke last
+  }
+  return null;
+}
+async function cont(){
+  if (!S.held || S.ended) return;
+  S.holds.push({ start:S.holdStart, end:Date.now() });
+  S.held = false; S.holdStart = 0;
+  const h = S.holds[S.holds.length-1];
+  note(`Discussion resumed after ${mmss(h.end - h.start)} on hold.`);
+  busy = true; refresh(); updateStatus();
+  if (S.pending.length){ await drain(); }
+  else {
+    const lq = lastPeerQuestion();
+    if (lq){
+      const m = { who:lq.who, text:`Okay, we're back. ${S.name}, picking up where we left off: ${lq.q}`, local:true };
+      show(m); await speak(m.text, m.who);
+    }
+  }
+  busy = false; save(); refresh();
+  if (!S.held){ $("input").focus(); maybeAutoListen(); }
+}
+
+/* ---------- Session flow ---------- */
+async function checkSetup(){
+  $("setupErr").textContent = "";
+  const name = $("name").value.trim();
+  if (!name){ $("setupErr").textContent = "Please enter your first name so your classmates can address you."; return false; }
+  if (CLAUDE_MODE){
+    const s = await getSample();
+    if (!s){ $("setupErr").textContent = "Claude test mode is not available in this view. Open the page inside Claude."; return false; }
+    return true;
+  }
+  accessCode = $("code").value.trim();
+  if (!accessCode){ $("setupErr").textContent = "Please enter the access code."; return false; }
+  if (!/^https:\/\/.+/.test(WORKER_URL)){ $("setupErr").textContent = "Setup needed: the instructor must set WORKER_URL in this page."; return false; }
+  $("startBtn").disabled = $("resumeBtn").disabled = true;
+  try { await post({ accessCode, checkOnly:true }); return true; }
+  catch (e){ $("setupErr").textContent = e.message; return false; }
+  finally { $("startBtn").disabled = $("resumeBtn").disabled = false; }
+}
+function unlockAudio(){                       // browsers only allow speech after a click
+  if (!synth) return;
+  try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch {}
+}
+function openChat(){
+  $("setup").classList.add("hidden"); $("chat").classList.remove("hidden"); $("caseFile").classList.remove("hidden");
+  $("composer").classList.remove("hidden"); $("status").classList.remove("hidden");
+  $("optSpeak2").checked = opt.speak; $("optHands2").checked = opt.hands;
+  if (!synth) $("voiceToggleWrap").classList.add("hidden");
+  clearInterval(tick); tick = setInterval(updateStatus, 1000); updateStatus(); refresh();
+  if (!SR) note("🎤 This browser cannot do speech recognition (use Chrome or Edge for the microphone). You can type your answers; your classmates will still speak.", true);
+}
+async function start(){
+  unlockAudio();
+  if (!(await checkSetup())) return;
+  S = freshState(); S.name = $("name").value.trim().split(/\s+/)[0]; save();
+  openChat();
+  await turn(`[SESSION_START] The human participant's first name is ${S.name}. Begin the group discussion now.`, 900, false);
+}
+async function resume(){
+  unlockAudio();
+  const saved = store.get(); if (!saved) return start();
+  if (!$("name").value.trim()) $("name").value = saved.name || "";
+  if (!(await checkSetup())) return;
+  S = saved; S.pending = S.pending || [];
+  const last = S.api[S.api.length-1];
+  let lost = false;
+  if (last && last.role === "user"){ S.api.pop(); lost = true; }
+  openChat();
+  $("chat").innerHTML = "";
+  S.shown.forEach(render);
+  if (lost) note("Your last message did not reach the group before the page closed. Please send it again after Continuation.");
+  if (S.ended) finishUi();
+  else if (!S.held){ S.held = true; S.holdStart = Date.now(); save(); }   // a reopened session comes back on hold
+  refresh(); updateStatus();
+}
+
+function isStop(t){ return /^\s*(okay\s+|ok\s+)?(please\s+)?(stop|let'?s stop|stop the discussion)[\s.!,]*(please)?[\s.!]*$/i.test(t); }
+function isHold(t){ return /^\s*(please\s+)?hold( on)?[\s.!]*$/i.test(t); }
+
+async function send(){
+  if (busy || S.held || S.ended) return;
+  stopListening();
+  const text = $("input").value.trim();
+  if (!text) return;
+  $("input").value = ""; autoGrow(); setListen("");
+  if (isHold(text)) return hold();
+  show({ who: S.name, text, me:true });
+  if (isStop(text)) return endSession();
+  stopSpeaking();
+  await turn(text, 900, false);
+}
+
+async function endSession(){
+  if (S.ended || busy || S.held) return;
+  stopSpeaking(); stopListening();
+  $("stopBtn").disabled = true;
+  S.pending = [];
+  note(`${S.name} ended the discussion. Preparing your evaluation…`);
+  const ok = await turn("[SESSION_END] The participant said stop. End the discussion now and write the full evaluation of the human participant as instructed.", 4500, true);
+  if (!ok) return;
+  S.ended = true; save(); finishUi();
+  speak(`Thanks, ${S.name}. Your evaluation is on the screen. Press Read evaluation aloud if you want me to read it to you.`, "Facilitator");
+}
+function finishUi(){
+  clearInterval(tick); updateStatus(); refresh();
+  ["stopBtn","holdBtn","contBtn","micBtn"].forEach(id => $(id).classList.add("hidden"));
+  setListen("");
+  $("input").placeholder = "Session ended. Press New session to start again.";
+  if (synth) $("readBtn").classList.remove("hidden");
+  if (!CLAUDE_MODE) $("dlBtn").classList.remove("hidden");
+  $("newBtn").classList.remove("hidden");
+}
+async function readReview(){
+  const r = [...S.shown].reverse().find(m => m.kind === "review"); if (!r) return;
+  if ($("readBtn").dataset.on === "1"){ stopSpeaking(); $("readBtn").dataset.on = ""; $("readBtn").textContent = "🔊 Read evaluation aloud"; return; }
+  const was = opt.speak; opt.speak = true;
+  $("readBtn").dataset.on = "1"; $("readBtn").textContent = "■ Stop reading";
+  await speak(r.text, "Facilitator");
+  opt.speak = was; $("readBtn").dataset.on = ""; $("readBtn").textContent = "🔊 Read evaluation aloud";
+}
+
+function download(){
+  const totalHeld = S.holds.reduce((a,h) => a + (h.end - h.start), 0);
+  const head = `Peer Case Rounds (Voice) — participant: ${S.name || "student"} — ${new Date(S.started).toLocaleString()}\n` +
+               `Times on hold: ${S.holds.length} (total ${mmss(totalHeld)})\n${"=".repeat(60)}\n\n`;
+  const body = S.shown.map(m => m.kind === "note" ? `[${m.text}]`
+                       : m.kind === "review" ? `${"=".repeat(60)}\nEVALUATION\n${"=".repeat(60)}\n${m.text}`
+                       : `${m.who}${m.me ? " (you)" : ""}: ${m.text}`).join("\n\n");
+  const blob = new Blob([head + body], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `peer-rounds-voice-${(S.name||"student").replace(/\W+/g,"-")}.txt`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function autoGrow(){ const t = $("input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight,180) + "px"; }
+
+/* ---------- Setup-screen voice tests ---------- */
+async function testVoices(){
+  if (!synth){ $("setupErr").textContent = "This browser cannot speak aloud. Try Chrome or Edge."; return; }
+  assignVoices(); const was = opt.speak; opt.speak = true;
+  $("testVoicesBtn").disabled = true;
+  await speak("Hi, I'm Priya. Let's rank that differential.", "Priya");
+  await speak("Marcus here. C R P and E S R first, quick.", "Marcus");
+  await speak("And I'm Devon. Let's not forget how mum is feeling.", "Devon");
+  opt.speak = was; $("testVoicesBtn").disabled = false;
+}
+function testMic(){
+  if (!SR){ $("micInfo").className = "info warn"; $("micInfo").textContent = "This browser has no speech recognition. Use Chrome or Edge for the microphone, or simply type your answers."; return; }
+  let r; try { r = new SR(); } catch { return; }
+  r.lang = SPEECH_LANG; r.interimResults = true;
+  $("micInfo").className = "info"; $("micInfo").textContent = "🔴 Listening… say a sentence, for example “I would order a complete blood count.”";
+  r.onresult = e => { $("micInfo").textContent = "I heard: “" + [...e.results].map(x => x[0].transcript).join(" ") + "”"; };
+  r.onerror = e => { $("micInfo").className = "info warn";
+    $("micInfo").textContent = (e.error === "not-allowed" || e.error === "service-not-allowed")
+      ? "The microphone is blocked. Click the lock or microphone icon in the address bar, allow the microphone, and reload the page. You can also type your answers."
+      : (e.error === "no-speech" ? "I did not hear anything. Check that the right microphone is selected and try again." : "Microphone problem: " + e.error); };
+  r.onend = () => { if ($("micInfo").textContent.startsWith("🔴")) $("micInfo").textContent = "I did not hear anything. Try again."; };
+  try { r.start(); } catch {}
+}
+
+/* ---------- Page start ---------- */
+if (CLAUDE_MODE){
+  $("codeWrap").classList.add("hidden"); $("fields").classList.add("one"); $("testBadge").classList.remove("hidden");
+  $("micInfo").className = "info warn";
+  $("micInfo").innerHTML = "Claude test mode: your classmates' voices should play, but Claude's test view usually blocks the microphone, so you will most likely <strong>type</strong> your answers here. The microphone works on the GitHub version in Chrome or Edge.";
+}
+if (!SR && !CLAUDE_MODE){ $("micInfo").className = "info warn"; $("micInfo").innerHTML = "This browser cannot use the microphone for speech. Please open the page in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>, or type your answers."; }
+(function offerResume(){
+  const saved = store.get();
+  if (!saved || saved.ended || !saved.api || saved.api.length < 2) return;
+  const when = new Date(saved.savedAt || saved.started).toLocaleString();
+  $("resumeBox").innerHTML = `You have an unfinished discussion${saved.name ? " for <strong>" + esc(saved.name) + "</strong>" : ""}, last active ${esc(when)}. ${CLAUDE_MODE ? "" : "Enter the access code and "}press <strong>Continue my held session</strong>, or start a new one.`;
+  $("resumeBox").classList.remove("hidden"); $("resumeBtn").classList.remove("hidden");
+  $("name").value = saved.name || "";
+})();
+
+const syncOpt = (k, a, b) => { $(a).onchange = () => { opt[k] = $(a).checked; $(b).checked = opt[k]; if (k === "speak" && !opt.speak) stopSpeaking(); };
+                                $(b).onchange = () => { opt[k] = $(b).checked; $(a).checked = opt[k]; if (k === "speak" && !opt.speak) stopSpeaking();
+                                                        if (k === "hands" && !opt.hands) clearTimeout(silenceTimer); }; };
+syncOpt("speak", "optSpeak", "optSpeak2"); syncOpt("hands", "optHands", "optHands2");
+$("testVoicesBtn").onclick = testVoices;
+$("testMicBtn").onclick = testMic;
+$("startBtn").onclick = start;
+$("resumeBtn").onclick = resume;
+$("code").addEventListener("keydown", e => { if (e.key === "Enter") ($("resumeBtn").classList.contains("hidden") ? start() : resume()); });
+$("micBtn").onclick = () => { if (listening){ stopListening(); if (opt.hands && $("input").value.trim()) send(); } else startListening(); };
+$("sendBtn").onclick = send;
+$("holdBtn").onclick = hold;
+$("contBtn").onclick = cont;
+$("stopBtn").onclick = () => { if (busy || S.held || S.ended) return; stopListening(); show({ who:S.name, text:"stop", me:true }); endSession(); };
+$("readBtn").onclick = readReview;
+$("dlBtn").onclick = download;
+$("newBtn").onclick = () => { stopSpeaking(); store.clear(); location.reload(); };
+$("input").addEventListener("input", autoGrow);
+$("input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(); } });
+</script>
+</body>
+</html>
